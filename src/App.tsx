@@ -13,33 +13,35 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/tech" element={<ProtectedRoute><TechDashboard /></ProtectedRoute>} />
-          <Route path="/bulk" element={<BulkOrderRoute><BulkOrderDashboard /></BulkOrderRoute>} />
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/" element={<RoleBasedRedirect />} />
-        </Routes>
+        <AppRoutes />
       </Router>
       <Toaster />
     </QueryClientProvider>
   );
 }
 
-function RoleBasedRedirect() {
+function AppRoutes() {
   const { user, loading, userRole } = useAuth();
   
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
-  
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  if (userRole === 'admin') return <Navigate to="/admin" replace />;
-  if (userRole === 'qa_tech' || userRole === 'packer') return <Navigate to="/bulk" replace />;
-  return <Navigate to="/tech" replace />;
+
+  return (
+    <Routes>
+      <Route path="/login" element={!user ? <Login /> : <Navigate to={getDefaultRoute(userRole)} replace />} />
+      <Route path="/tech" element={<ProtectedRoute><TechDashboard /></ProtectedRoute>} />
+      <Route path="/bulk" element={<BulkOrderRoute><BulkOrderDashboard /></BulkOrderRoute>} />
+      <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+      <Route path="/" element={user ? <Navigate to={getDefaultRoute(userRole)} replace /> : <Navigate to="/login" replace />} />
+    </Routes>
+  );
+}
+
+function getDefaultRoute(userRole: string | null) {
+  if (userRole === 'admin') return '/admin';
+  if (userRole === 'qa_tech' || userRole === 'packer') return '/bulk';
+  return '/tech';
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
