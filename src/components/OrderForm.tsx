@@ -39,7 +39,7 @@ export default function OrderForm({ onSuccess, onCancel, editOrder }: OrderFormP
             order_id: orderId,
             quantity: parseInt(quantity),
             notes: notes || null,
-          })
+          } as any)
           .eq('id', editOrder.id);
 
         if (error) throw error;
@@ -53,7 +53,8 @@ export default function OrderForm({ onSuccess, onCancel, editOrder }: OrderFormP
             notes: notes || null,
             tech_id: user?.id,
             status: 'pending',
-          });
+            item_name: 'Item',
+          } as any);
 
         if (error) throw error;
         toast.success('Order added successfully');

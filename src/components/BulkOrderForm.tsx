@@ -99,7 +99,7 @@ export default function BulkOrderForm({ onSuccess }: { onSuccess: () => void }) 
 
       const { error } = await supabase
         .from('orders')
-        .insert(ordersToInsert);
+        .insert(ordersToInsert as any);
 
       if (error) throw error;
 

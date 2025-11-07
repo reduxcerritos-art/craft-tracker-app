@@ -60,7 +60,7 @@ export default function AdminOrderManagement() {
     if (error) {
       toast.error('Failed to load orders');
     } else {
-      setOrders(data || []);
+      setOrders((data as any) || []);
     }
     setLoading(false);
   };
@@ -143,7 +143,7 @@ export default function AdminOrderManagement() {
             notes: formData.notes || null,
             tech_id: formData.tech_id,
             status: formData.status,
-          })
+          } as any)
           .eq('id', editingOrder.id);
 
         if (error) throw error;
@@ -158,7 +158,8 @@ export default function AdminOrderManagement() {
             notes: formData.notes || null,
             tech_id: formData.tech_id,
             status: formData.status,
-          });
+            item_name: 'Item',
+          } as any);
 
         if (error) throw error;
         toast.success('Order added');
