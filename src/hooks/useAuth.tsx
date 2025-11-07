@@ -7,6 +7,7 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -45,10 +46,15 @@ export function useAuth() {
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
-      .eq('role', 'admin')
-      .single();
+      .maybeSingle();
     
-    setIsAdmin(!!data);
+    if (data) {
+      setUserRole(data.role);
+      setIsAdmin(data.role === 'admin');
+    } else {
+      setUserRole(null);
+      setIsAdmin(false);
+    }
   };
 
   const signIn = async (techId: string, password: string) => {
@@ -74,5 +80,5 @@ export function useAuth() {
     await supabase.auth.signOut();
   };
 
-  return { user, session, loading, isAdmin, signIn, signOut };
+  return { user, session, loading, isAdmin, userRole, signIn, signOut };
 }
