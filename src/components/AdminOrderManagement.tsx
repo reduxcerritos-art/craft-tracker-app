@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Pencil, Trash2, Plus } from 'lucide-react';
+import { Pencil, Trash2, Plus, X } from 'lucide-react';
 
 interface Order {
   id: string;
@@ -19,6 +19,7 @@ interface Order {
   notes: string | null;
   created_at: string;
   tech_id: string;
+  double_dip: boolean;
   profiles: {
     full_name: string;
     tech_id: string;
@@ -185,6 +186,21 @@ export default function AdminOrderManagement() {
     }
   };
 
+  const handleClearDoubleDip = async (orderId: string) => {
+    if (!confirm('Are you sure you want to clear the double dip flag? This order will now count toward the tech\'s quota.')) return;
+
+    const { error } = await supabase
+      .from('orders')
+      .update({ double_dip: false } as any)
+      .eq('id', orderId);
+
+    if (error) {
+      toast.error('Failed to clear double dip flag');
+    } else {
+      toast.success('Double dip flag cleared');
+    }
+  };
+
   if (loading) {
     return <div>Loading orders...</div>;
   }
@@ -200,11 +216,18 @@ export default function AdminOrderManagement() {
         <Card><CardContent className="py-8 text-center text-muted-foreground">No orders yet</CardContent></Card>
       ) : (
         orders.map((order) => (
-          <Card key={order.id}>
+          <Card key={order.id} className={order.double_dip ? 'border-orange-500 border-2' : ''}>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="font-semibold">Order #{order.order_id}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold">Order #{order.order_id}</p>
+                    {order.double_dip && (
+                      <span className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded font-medium">
+                        Double Dip
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Tech: {order.profiles.full_name} ({order.profiles.tech_id})
                   </p>
@@ -227,6 +250,16 @@ export default function AdminOrderManagement() {
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                   </Select>
+                  {order.double_dip && (
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => handleClearDoubleDip(order.id)}
+                      title="Clear double dip flag"
+                    >
+                      <X className="w-4 h-4 text-orange-600" />
+                    </Button>
+                  )}
                   <Button variant="outline" size="icon" onClick={() => handleEdit(order)}>
                     <Pencil className="w-4 h-4" />
                   </Button>

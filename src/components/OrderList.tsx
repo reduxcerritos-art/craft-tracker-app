@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { AlertTriangle } from 'lucide-react';
+import { logOrderActivity } from '@/lib/orderLogs';
 
 interface Order {
   id: string;
@@ -71,6 +72,9 @@ export default function OrderList({ onStatusChange }: OrderListProps) {
   };
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    const order = orders.find(o => o.id === orderId);
+    const oldStatus = order?.status;
+    
     const { error } = await supabase
       .from('orders')
       .update({ status: newStatus })
@@ -79,6 +83,11 @@ export default function OrderList({ onStatusChange }: OrderListProps) {
     if (error) {
       toast.error('Failed to update status');
     } else {
+      // Log completion activity
+      if (newStatus === 'completed' && oldStatus !== 'completed') {
+        await logOrderActivity(orderId, 'completed', user!.id);
+      }
+      
       toast.success('Status updated');
       if (onStatusChange) {
         onStatusChange();

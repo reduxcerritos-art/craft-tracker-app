@@ -7,6 +7,7 @@ import BulkOrderForm from '@/components/BulkOrderForm';
 import OrderList from '@/components/OrderList';
 import { LogOut } from 'lucide-react';
 import { format } from 'date-fns';
+import { getRoleDisplayName } from '@/lib/orderLogs';
 
 export default function BulkOrderDashboard() {
   const { user, signOut, userRole } = useAuth();
@@ -56,9 +57,7 @@ export default function BulkOrderDashboard() {
   };
 
   const getRoleDisplay = () => {
-    if (userRole === 'qa_tech') return 'QA Tech';
-    if (userRole === 'packer') return 'Packer';
-    return 'User';
+    return getRoleDisplayName(userRole);
   };
 
   return (
@@ -68,8 +67,9 @@ export default function BulkOrderDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                {techName} - {getRoleDisplay()}
+                {techName}
               </h1>
+              <p className="text-sm text-muted-foreground">{getRoleDisplayName(userRole)}</p>
               <p className="text-sm text-muted-foreground">
                 {format(currentTime, 'EEEE, MMMM d, yyyy • h:mm:ss a')}
               </p>

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Trash2, AlertTriangle } from 'lucide-react';
 import { checkDuplicateOrder } from '@/lib/orderValidation';
+import { logOrderActivity } from '@/lib/orderLogs';
 
 interface OrderRow {
   id: string;
@@ -104,11 +105,19 @@ export default function BulkOrderForm({ onSuccess }: { onSuccess: () => void }) 
         double_dip: duplicateChecks[index].isDuplicate,
       }));
 
-      const { error } = await supabase
+      const { data: insertedOrders, error } = await supabase
         .from('orders')
-        .insert(ordersToInsert as any);
+        .insert(ordersToInsert as any)
+        .select();
 
       if (error) throw error;
+
+      // Log check-in activity for all new orders
+      if (insertedOrders) {
+        await Promise.all(
+          insertedOrders.map(order => logOrderActivity(order.id, 'checked_in', user!.id))
+        );
+      }
 
       const duplicateCount = duplicateChecks.filter(check => check.isDuplicate).length;
       const successCount = ordersToInsert.length - duplicateCount;

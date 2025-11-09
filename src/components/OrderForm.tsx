@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { checkDuplicateOrder } from '@/lib/orderValidation';
-import { AlertTriangle } from 'lucide-react';
+import { logOrderActivity } from '@/lib/orderLogs';
+import { AlertTriangle, Edit2 } from 'lucide-react';
 
 interface OrderFormProps {
   onSuccess: () => void;
@@ -28,6 +29,7 @@ export default function OrderForm({ onSuccess, onCancel, editOrder }: OrderFormP
   const [quantity, setQuantity] = useState(editOrder?.quantity.toString() || '');
   const [notes, setNotes] = useState(editOrder?.notes || '');
   const [loading, setLoading] = useState(false);
+  const [isEditingOrderId, setIsEditingOrderId] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +52,7 @@ export default function OrderForm({ onSuccess, onCancel, editOrder }: OrderFormP
         // Check for duplicate order (double dipping)
         const { isDuplicate, previousOrder } = await checkDuplicateOrder(orderId, user!.id);
         
-        const { error } = await supabase
+        const { data: newOrder, error } = await supabase
           .from('orders')
           .insert({
             order_id: orderId,
@@ -60,9 +62,16 @@ export default function OrderForm({ onSuccess, onCancel, editOrder }: OrderFormP
             status: 'pending',
             item_name: 'Item',
             double_dip: isDuplicate,
-          } as any);
+          } as any)
+          .select()
+          .single();
 
         if (error) throw error;
+        
+        // Log check-in activity
+        if (newOrder) {
+          await logOrderActivity(newOrder.id, 'checked_in', user!.id);
+        }
         
         if (isDuplicate) {
           toast.warning(
@@ -93,11 +102,25 @@ export default function OrderForm({ onSuccess, onCancel, editOrder }: OrderFormP
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="orderId">Order ID</Label>
+            <div className="flex items-center justify-between mb-1">
+              <Label htmlFor="orderId">Order ID</Label>
+              {editOrder && !isEditingOrderId && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingOrderId(true)}
+                >
+                  <Edit2 className="w-3 h-3 mr-1" />
+                  Edit
+                </Button>
+              )}
+            </div>
             <Input
               id="orderId"
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
+              disabled={editOrder && !isEditingOrderId}
               required
             />
           </div>

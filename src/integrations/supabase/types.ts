@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      order_logs: {
+        Row: {
+          action: string
+          id: string
+          notes: string | null
+          order_id: string
+          tech_id: string
+          timestamp: string
+        }
+        Insert: {
+          action: string
+          id?: string
+          notes?: string | null
+          order_id: string
+          tech_id: string
+          timestamp?: string
+        }
+        Update: {
+          action?: string
+          id?: string
+          notes?: string | null
+          order_id?: string
+          tech_id?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_logs_tech_id_fkey"
+            columns: ["tech_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string

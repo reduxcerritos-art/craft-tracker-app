@@ -7,9 +7,10 @@ import OrderForm from '@/components/OrderForm';
 import OrderList from '@/components/OrderList';
 import { LogOut } from 'lucide-react';
 import { format } from 'date-fns';
+import { getRoleDisplayName } from '@/lib/orderLogs';
 
 export default function TechDashboard() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, userRole } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [techName, setTechName] = useState('');
   const [completedToday, setCompletedToday] = useState(0);
@@ -68,6 +69,7 @@ export default function TechDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">{techName}</h1>
+              <p className="text-sm text-muted-foreground">{getRoleDisplayName(userRole)}</p>
               <p className="text-sm text-muted-foreground">
                 {format(currentTime, 'EEEE, MMMM d, yyyy • h:mm:ss a')}
               </p>
