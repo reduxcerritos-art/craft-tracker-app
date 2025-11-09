@@ -50,6 +50,7 @@ export default function TechDashboard() {
       .select('*', { count: 'exact', head: true })
       .eq('tech_id', user?.id)
       .eq('status', 'completed')
+      .eq('double_dip', false) // Exclude double dips from count
       .gte('updated_at', today.toISOString());
     
     setCompletedToday(count || 0);

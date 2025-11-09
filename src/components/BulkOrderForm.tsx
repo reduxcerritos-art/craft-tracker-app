@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Trash2 } from 'lucide-react';
+import { Trash2, AlertTriangle } from 'lucide-react';
+import { checkDuplicateOrder } from '@/lib/orderValidation';
 
 interface OrderRow {
   id: string;
@@ -89,12 +90,18 @@ export default function BulkOrderForm({ onSuccess }: { onSuccess: () => void }) 
     setLoading(true);
 
     try {
-      const ordersToInsert = validRows.map(row => ({
+      // Check for duplicates for each order
+      const duplicateChecks = await Promise.all(
+        validRows.map(row => checkDuplicateOrder(row.orderId.trim(), user!.id))
+      );
+
+      const ordersToInsert = validRows.map((row, index) => ({
         order_id: row.orderId.trim(),
         quantity: parseInt(row.quantity),
         notes: row.notes.trim() || null,
         tech_id: user!.id,
-        item_name: 'Item', // Default value as per schema
+        item_name: 'Item',
+        double_dip: duplicateChecks[index].isDuplicate,
       }));
 
       const { error } = await supabase
@@ -103,7 +110,20 @@ export default function BulkOrderForm({ onSuccess }: { onSuccess: () => void }) 
 
       if (error) throw error;
 
-      toast.success(`${ordersToInsert.length} order${ordersToInsert.length > 1 ? 's' : ''} added successfully`);
+      const duplicateCount = duplicateChecks.filter(check => check.isDuplicate).length;
+      const successCount = ordersToInsert.length - duplicateCount;
+
+      if (duplicateCount > 0) {
+        toast.warning(
+          `⚠️ ${duplicateCount} double dip${duplicateCount > 1 ? 's' : ''} detected! These orders were already processed in previous days and won't count toward today's quota.`,
+          { duration: 6000 }
+        );
+      }
+      
+      if (successCount > 0) {
+        toast.success(`${successCount} new order${successCount > 1 ? 's' : ''} added successfully`);
+      }
+
       setRows([{ id: '1', orderId: '', quantity: '', notes: '' }]);
       onSuccess();
     } catch (error: any) {

@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { checkDuplicateOrder } from '@/lib/orderValidation';
+import { AlertTriangle } from 'lucide-react';
 
 interface OrderFormProps {
   onSuccess: () => void;
@@ -45,6 +47,9 @@ export default function OrderForm({ onSuccess, onCancel, editOrder }: OrderFormP
         if (error) throw error;
         toast.success('Order updated successfully');
       } else {
+        // Check for duplicate order (double dipping)
+        const { isDuplicate, previousOrder } = await checkDuplicateOrder(orderId, user!.id);
+        
         const { error } = await supabase
           .from('orders')
           .insert({
@@ -54,10 +59,19 @@ export default function OrderForm({ onSuccess, onCancel, editOrder }: OrderFormP
             tech_id: user?.id,
             status: 'pending',
             item_name: 'Item',
+            double_dip: isDuplicate,
           } as any);
 
         if (error) throw error;
-        toast.success('Order added successfully');
+        
+        if (isDuplicate) {
+          toast.warning(
+            `⚠️ Double Dip Detected! This order was already processed on ${new Date(previousOrder!.created_at).toLocaleDateString()}. It will not count toward today's quota.`,
+            { duration: 6000 }
+          );
+        } else {
+          toast.success('Order added successfully');
+        }
       }
 
       onSuccess();

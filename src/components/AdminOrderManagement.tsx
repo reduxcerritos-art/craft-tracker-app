@@ -219,12 +219,13 @@ export default function AdminOrderManagement() {
                     <SelectTrigger className="w-[150px]">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="on-hold">On Hold</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="incomplete">Incomplete</SelectItem>
+                    <SelectItem value="on-hold">On Hold</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
                   </Select>
                   <Button variant="outline" size="icon" onClick={() => handleEdit(order)}>
                     <Pencil className="w-4 h-4" />
@@ -280,6 +281,7 @@ export default function AdminOrderManagement() {
                 <SelectContent>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="incomplete">Incomplete</SelectItem>
                   <SelectItem value="on-hold">On Hold</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                 </SelectContent>

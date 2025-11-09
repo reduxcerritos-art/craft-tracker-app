@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { AlertTriangle } from 'lucide-react';
 
 interface Order {
   id: string;
@@ -13,6 +14,7 @@ interface Order {
   status: string;
   notes: string | null;
   created_at: string;
+  double_dip: boolean;
 }
 
 interface OrderListProps {
@@ -95,11 +97,19 @@ export default function OrderList({ onStatusChange }: OrderListProps) {
   return (
     <div className="space-y-4">
       {orders.map((order) => (
-        <Card key={order.id}>
+        <Card key={order.id} className={order.double_dip ? 'border-orange-500 border-2' : ''}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="font-semibold">Order #{order.order_id}</p>
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold">Order #{order.order_id}</p>
+                  {order.double_dip && (
+                    <div className="flex items-center gap-1 text-orange-600 bg-orange-50 px-2 py-0.5 rounded text-xs font-medium">
+                      <AlertTriangle className="w-3 h-3" />
+                      Double Dip - Not Counted
+                    </div>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">Quantity: {order.quantity}</p>
                 {order.notes && <p className="text-sm text-muted-foreground">Notes: {order.notes}</p>}
                 <p className="text-xs text-muted-foreground">
@@ -114,6 +124,7 @@ export default function OrderList({ onStatusChange }: OrderListProps) {
                   <SelectContent>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="incomplete">Incomplete</SelectItem>
                     <SelectItem value="on-hold">On Hold</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>

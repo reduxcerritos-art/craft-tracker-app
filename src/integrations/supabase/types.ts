@@ -17,6 +17,7 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          double_dip: boolean
           id: string
           item_name: string
           notes: string | null
@@ -28,6 +29,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          double_dip?: boolean
           id?: string
           item_name: string
           notes?: string | null
@@ -39,6 +41,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          double_dip?: boolean
           id?: string
           item_name?: string
           notes?: string | null
