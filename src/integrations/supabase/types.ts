@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      google_sheets_config: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          sheet_url: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: string
+          sheet_url: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          sheet_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_logs: {
         Row: {
           action: string

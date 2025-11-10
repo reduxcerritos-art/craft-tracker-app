@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 
@@ -13,6 +14,7 @@ interface Tech {
   tech_id: string;
   email: string;
   full_name: string;
+  role?: string;
 }
 
 export default function TechManagement() {
@@ -25,6 +27,7 @@ export default function TechManagement() {
     email: '',
     full_name: '',
     password: '',
+    role: 'tech',
   });
 
   useEffect(() => {
@@ -32,27 +35,51 @@ export default function TechManagement() {
   }, []);
 
   const loadTechs = async () => {
-    const { data, error } = await supabase
+    const { data: profiles, error } = await supabase
       .from('profiles')
       .select('*')
       .order('full_name');
 
     if (error) {
       toast.error('Failed to load techs');
-    } else {
-      setTechs(data || []);
+      setLoading(false);
+      return;
     }
+
+    // Get roles for each user
+    const techsWithRoles = await Promise.all(
+      (profiles || []).map(async (profile) => {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', profile.id)
+          .single();
+        
+        return {
+          ...profile,
+          role: roleData?.role || 'tech'
+        };
+      })
+    );
+
+    setTechs(techsWithRoles);
     setLoading(false);
   };
 
   const handleAdd = () => {
-    setFormData({ tech_id: '', email: '', full_name: '', password: '' });
+    setFormData({ tech_id: '', email: '', full_name: '', password: '', role: 'tech' });
     setEditingTech(null);
     setShowDialog(true);
   };
 
   const handleEdit = (tech: Tech) => {
-    setFormData({ tech_id: tech.tech_id, email: tech.email, full_name: tech.full_name, password: '' });
+    setFormData({ 
+      tech_id: tech.tech_id, 
+      email: tech.email, 
+      full_name: tech.full_name, 
+      password: '',
+      role: tech.role || 'tech'
+    });
     setEditingTech(tech);
     setShowDialog(true);
   };
@@ -72,6 +99,14 @@ export default function TechManagement() {
           .eq('id', editingTech.id);
 
         if (error) throw error;
+
+        // Update role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .update({ role: formData.role as 'admin' | 'tech' })
+          .eq('user_id', editingTech.id);
+
+        if (roleError) throw roleError;
 
         if (formData.password) {
           const { error: funcError } = await supabase.functions.invoke('manage-users', {
@@ -93,6 +128,7 @@ export default function TechManagement() {
             password: formData.password,
             tech_id: formData.tech_id,
             full_name: formData.full_name,
+            role: formData.role,
           },
         });
 
@@ -148,6 +184,7 @@ export default function TechManagement() {
                   <p className="font-semibold">{tech.full_name}</p>
                   <p className="text-sm text-muted-foreground">Tech ID: {tech.tech_id}</p>
                   <p className="text-sm text-muted-foreground">Email: {tech.email}</p>
+                  <p className="text-sm text-muted-foreground">Role: <span className="font-medium capitalize">{tech.role}</span></p>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="icon" onClick={() => handleEdit(tech)}>
@@ -187,6 +224,18 @@ export default function TechManagement() {
             <div>
               <Label>Password {editingTech && '(leave blank to keep current)'}</Label>
               <Input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+            </div>
+            <div>
+              <Label>Role</Label>
+              <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tech">Tech</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSave}>Save</Button>

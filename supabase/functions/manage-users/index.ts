@@ -17,7 +17,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { action, userId, email, password, tech_id, full_name } = await req.json();
+    const { action, userId, email, password, tech_id, full_name, role } = await req.json();
 
     console.log('Manage users action:', action);
 
@@ -33,6 +33,18 @@ serve(async (req) => {
       });
 
       if (authError) throw authError;
+
+      // Set role if provided, otherwise default to 'tech'
+      if (authData?.user?.id) {
+        const { error: roleError } = await supabaseAdmin
+          .from('user_roles')
+          .insert({
+            user_id: authData.user.id,
+            role: role || 'tech',
+          });
+        
+        if (roleError) throw roleError;
+      }
 
       return new Response(
         JSON.stringify({ success: true, user: authData.user }),
