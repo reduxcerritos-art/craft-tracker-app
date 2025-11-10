@@ -3,8 +3,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OrderForm from '@/components/OrderForm';
 import OrderList from '@/components/OrderList';
+import ProfileManagement from '@/components/ProfileManagement';
 import { LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { getRoleDisplayName } from '@/lib/orderLogs';
@@ -89,18 +91,31 @@ export default function TechDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          {!showForm ? (
-            <Button onClick={() => setShowForm(true)}>Add New Order</Button>
-          ) : (
-            <OrderForm 
-              onSuccess={handleOrderAdded} 
-              onCancel={() => setShowForm(false)} 
-            />
-          )}
-        </div>
+        <Tabs defaultValue="orders" className="w-full">
+          <TabsList>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="profile">My Profile</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="orders">
+            <div className="mb-6">
+              {!showForm ? (
+                <Button onClick={() => setShowForm(true)}>Add New Order</Button>
+              ) : (
+                <OrderForm 
+                  onSuccess={handleOrderAdded} 
+                  onCancel={() => setShowForm(false)} 
+                />
+              )}
+            </div>
 
-        <OrderList onStatusChange={loadCompletedCount} />
+            <OrderList onStatusChange={loadCompletedCount} />
+          </TabsContent>
+          
+          <TabsContent value="profile">
+            <ProfileManagement />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

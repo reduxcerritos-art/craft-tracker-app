@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminOrderManagement from '@/components/AdminOrderManagement';
 import TechManagement from '@/components/TechManagement';
+import ProfileManagement from '@/components/ProfileManagement';
 import ExportDialog from '@/components/ExportDialog';
 import { LogOut, Download } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export default function AdminDashboard() {
           <TabsList>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="techs">Manage Techs</TabsTrigger>
+            <TabsTrigger value="profile">My Profile</TabsTrigger>
           </TabsList>
           
           <TabsContent value="orders">
@@ -44,6 +46,10 @@ export default function AdminDashboard() {
           
           <TabsContent value="techs">
             <TechManagement />
+          </TabsContent>
+          
+          <TabsContent value="profile">
+            <ProfileManagement />
           </TabsContent>
         </Tabs>
       </main>

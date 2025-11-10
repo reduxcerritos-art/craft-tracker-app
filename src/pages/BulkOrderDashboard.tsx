@@ -3,8 +3,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BulkOrderForm from '@/components/BulkOrderForm';
 import OrderList from '@/components/OrderList';
+import ProfileManagement from '@/components/ProfileManagement';
 import { LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { getRoleDisplayName } from '@/lib/orderLogs';
@@ -89,11 +91,24 @@ export default function BulkOrderDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <BulkOrderForm onSuccess={loadCompletedCount} />
-        </div>
+        <Tabs defaultValue="orders" className="w-full">
+          <TabsList>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="profile">My Profile</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="orders">
+            <div className="mb-6">
+              <BulkOrderForm onSuccess={loadCompletedCount} />
+            </div>
 
-        <OrderList onStatusChange={loadCompletedCount} />
+            <OrderList onStatusChange={loadCompletedCount} />
+          </TabsContent>
+          
+          <TabsContent value="profile">
+            <ProfileManagement />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
