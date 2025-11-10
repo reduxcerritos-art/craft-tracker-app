@@ -9,10 +9,12 @@ import OrderList from '@/components/OrderList';
 import ProfileManagement from '@/components/ProfileManagement';
 import { LogOut } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { getRoleDisplayName } from '@/lib/orderLogs';
 
 export default function TechDashboard() {
   const { user, signOut, userRole } = useAuth();
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [techName, setTechName] = useState('');
   const [completedToday, setCompletedToday] = useState(0);
@@ -31,6 +33,12 @@ export default function TechDashboard() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (userRole === 'admin') {
+      navigate('/admin', { replace: true });
+    }
+  }, [userRole, navigate]);
 
   const loadTechName = async () => {
     const { data } = await supabase

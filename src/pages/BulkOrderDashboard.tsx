@@ -10,9 +10,11 @@ import ProfileManagement from '@/components/ProfileManagement';
 import { LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { getRoleDisplayName } from '@/lib/orderLogs';
+import { useNavigate } from 'react-router-dom';
 
 export default function BulkOrderDashboard() {
   const { user, signOut, userRole } = useAuth();
+  const navigate = useNavigate();
   const [techName, setTechName] = useState('');
   const [completedToday, setCompletedToday] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -30,6 +32,12 @@ export default function BulkOrderDashboard() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (userRole === 'admin') {
+      navigate('/admin', { replace: true });
+    }
+  }, [userRole, navigate]);
 
   const loadTechName = async () => {
     const { data } = await supabase

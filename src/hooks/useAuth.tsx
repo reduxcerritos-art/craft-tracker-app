@@ -10,24 +10,23 @@ export function useAuth() {
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          await checkAdminRole(session.user.id);
-        } else {
-          setIsAdmin(false);
-          setUserRole(null);
-        }
-        
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (session?.user) {
+        setTimeout(async () => {
+          await checkAdminRole(session.user!.id);
+          setLoading(false);
+        }, 0);
+      } else {
+        setIsAdmin(false);
+        setUserRole(null);
         setLoading(false);
       }
-    );
+    });
 
     supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      // Clear invalid sessions
       if (error) {
         await supabase.auth.signOut();
         setSession(null);
@@ -40,12 +39,15 @@ export function useAuth() {
 
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
-        await checkAdminRole(session.user.id);
+        setTimeout(async () => {
+          await checkAdminRole(session.user!.id);
+          setLoading(false);
+        }, 0);
+      } else {
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
